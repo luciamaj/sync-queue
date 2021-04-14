@@ -1,5 +1,7 @@
 var Queue = require('../');
-var queue = new Queue();
+var queue = new Queue(function() {
+  console.log("ended");
+});
 
 queue.place(function one() {
   console.log("I'm func one");

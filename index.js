@@ -5,7 +5,7 @@
 // This file may not be copied, modified, or distributed
 // except according to those terms.
 
-function queue() {
+function queue(completionHandler) {
 
   // Create an empty array of commands
   var queue = [];
@@ -25,6 +25,7 @@ function queue() {
       // We're no longer active
       queue.active = false;
       // Stop execution
+      completionHandler();
       return;
     } 
     // Grab the next command
