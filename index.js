@@ -5,7 +5,7 @@
 // This file may not be copied, modified, or distributed
 // except according to those terms.
 
-function queue(completionHandler) {
+function queue(completionHandler, nextHandler) {
 
   // Create an empty array of commands
   var queue = [];
@@ -20,6 +20,8 @@ function queue(completionHandler) {
   };
   // Method for calling the next command chain in the array
   queue.next = function () {
+    nextHandler();
+    
     // If this is the end of the queue
     if (!queue.length) {
       // We're no longer active
@@ -27,7 +29,9 @@ function queue(completionHandler) {
       // Stop execution
       completionHandler();
       return;
-    } 
+    } else {
+       nextHandler(queue.length);
+    }
     // Grab the next command
     var command = queue.shift();
     // We're active
