@@ -4,48 +4,54 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>. 
 // This file may not be copied, modified, or distributed
 // except according to those terms.
+var util = require('util');
+var emitter = require('events').EventEmitter;
 
-function queue(completionHandler, nextHandler) {
+function queue(name, info) {
+  var me = this;
+  emitter.call(this);
 
+  this.name = name;
+  this.info = info;
   // Create an empty array of commands
-  var queue = [];
+  this.queue = [];
   // We're inactive to begin with
-  queue.active = false;
+  this.queue.active = false;
   // Method for adding command chain to the queue
-  queue.place = function (command) { 
+  this.queue.place = function (command, commandId) { 
     // Push the command onto the command array
-    queue.push(command);
+    me.queue.push({command: command, id: commandId ? commandId : me.queue.push.length++});
     // If we're currently inactive, start processing
-    if (!queue.active) queue.next();
+    if (!me.queue.active) me.queue.next();
   };
   // Method for calling the next command chain in the array
-  queue.next = function () {
-    nextHandler();
-    
+  this.queue.next = function () {
     // If this is the end of the queue
-    if (!queue.length) {
+    if (!me.queue.length) {
       // We're no longer active
-      queue.active = false;
+      me.queue.active = false;
       // Stop execution
-      completionHandler();
+      me.emit('end');
       return;
-    } else {
-       nextHandler(queue.length);
     }
     // Grab the next command
-    var command = queue.shift();
+    var commandObj = me.queue.shift();
     // We're active
-    queue.active = true;
+    me.queue.active = true;
     // Call the command
-    command();
+    me.emit('next', me.queue.length, commandObj.id);
+
+    commandObj.command();
   };
   //Clearing queue
-  queue.clear = function(){
-    queue.length = 0;
-    queue.active = false;
+  this.queue.clear = function() {
+    me.queue.length = 0;
+    me.queue.active = false;
   };
 
-  return queue;
+  return this;
 }
+
+util.inherits(queue, emitter);
 
 module.exports = queue;
